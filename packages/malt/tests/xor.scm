@@ -1,5 +1,5 @@
 ;;; Seeded 2-to-8-to-1 ReLU XOR, using the Malt learner backend.
-;;; Run: build/emit run demos/malt-xor.scm
+;;; Check program: prints rounded predictions and loss, then a completion datum.
 (import (scheme base) (scheme write) (srfi 27) (prefix (malt learner) m:))
 (define network
   (m:stack-blocks
@@ -29,5 +29,8 @@
               (error "XOR prediction outside acceptance threshold" predictions))
           (loop (cdr actual) (cdr expected) (+ total (* difference difference)))))))
 (if (>= squared-error 0.04) (error "XOR loss outside acceptance threshold" squared-error))
-(write (list 'xor predictions squared-error))
+(define (round6 x) (/ (round (* x 1000000.0)) 1000000.0))
+(write (list 'xor (map round6 predictions) (round6 squared-error)))
+(newline)
+(write '(malt-xor-complete ok))
 (newline)

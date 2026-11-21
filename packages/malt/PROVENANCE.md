@@ -36,7 +36,11 @@ remain supported. No Racket global printer or logging thread is ported. RMS reta
 local epsilon `1e-7`; Adam and exported `epsilon` use `1e-8`. The upstream Adam
 formula has no bias correction; this port preserves it.
 
-`test/malt-reference/upstream.json` records hashes of relevant upstream files;
+`tests/reference/upstream.json` records hashes of relevant upstream files;
 `export-map.json` maps every public export to its source group/adaptation.
 Committed reference data can be consumed without Racket or this checkout.
 The optional reference regeneration command is documented in `docs/MALT.md`.
+
+Until November 2026 the port lived in the Emit repository (`bwbensonjr/emit`, first
+released in Emit 0.7.0). Its history was carried into this repository; each
+commit's `Filtered-from:` trailer names the original Emit commit.

@@ -13,7 +13,8 @@ import tarfile
 import tempfile
 
 HERE = Path(__file__).resolve().parent
-ROOT = HERE.parent.parent
+ROOT = HERE.parents[3]
+PACKAGE = HERE.parents[1]
 
 
 def datum(text):
@@ -46,8 +47,8 @@ def main():
     names = [entry[2] if isinstance(entry, list) else entry for entry in declaration[1:]]
     assert len(names) == len(set(names)), "duplicate facade exports"
     assert set(names) == set(exports), "facade export inventory differs from pinned mapping"
-    assert (ROOT / "lib/malt/LICENSE").read_text().startswith("MIT License\n")
-    suite = (ROOT / "test/malt-training.scm").read_text()
+    assert (PACKAGE / "LICENSE").read_text().startswith("MIT License\n")
+    suite = (PACKAGE / "tests/training.scm").read_text()
     inline = suite.split("(define reference\n", 1)[1].split("\n(define (expected", 1)[0]
     assert inline == "  '" + (HERE / "expected.scm").read_text().strip() + ")", "training suite fixtures differ from independent reference"
     subprocess.run([sys.executable, str(HERE / "xor-reference.py"), "--check"], check=True)

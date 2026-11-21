@@ -19,13 +19,14 @@ than performance thresholds. Compilation is excluded from these times.
 The quadratic finishes at `29.998892352401082`. The XOR fixture uses stream
 `(17, 0)`, learning rate `0.01`, and batch size four; total squared error is
 `4.067564042545842e-31`. Its committed independent initial tensors and sampling
-schedule live in `test/malt-reference/xor-data.json`.
+schedule live in `tests/reference/xor-data.json`.
 
-To rebuild the core and XOR programs from the checkout:
+These measurements were taken while Malt lived in the Emit repository. To
+rebuild the core and XOR programs from this collection's root:
 
 ```sh
-build/emit build -L lib test/malt-core.scm -o /tmp/malt-core
-build/emit build -L lib demos/malt-xor.scm -o /tmp/malt-xor
+emit build -L lib -L packages/malt/tests packages/malt/tests/core.scm -o /tmp/malt-core
+emit build -L lib packages/malt/tests/xor.scm -o /tmp/malt-xor
 /tmp/malt-core
 /tmp/malt-xor
 ```

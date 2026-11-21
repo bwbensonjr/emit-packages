@@ -10,7 +10,7 @@ from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parent
-spec = importlib.util.spec_from_file_location("random_reference", ROOT.parent / "random-sources/reference.py")
+spec = importlib.util.spec_from_file_location("random_reference", ROOT / "random_reference.py")
 reference = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(reference)
 XS = [(0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (1.0, 1.0)]

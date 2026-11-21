@@ -2,11 +2,12 @@
 
 `(malt learner)` provides the nested-vector learner backend from *The Little
 Learner* with layers, losses, optimizers, initialization, and minibatch sampling.
-It ships as optional ordinary Scheme source: importing it compiles its library
+It is part of the [emit-packages](../../../README.md) collection, installed by
+adding the collection's `lib/` as a library root. Importing it compiles its library
 closure, and a standalone executable needs no Malt, Racket, or Emit source files
 at runtime. See [tensor and AD details](MALT-CORE.md), the
-[public facade](../lib/malt/learner.sld), and
-[source attribution and adaptations](../lib/malt/PROVENANCE.md).
+[public facade](../../../lib/malt/learner.sld), and
+[source attribution and adaptations](../PROVENANCE.md).
 
 [Standalone measurements](MALT-MEASUREMENTS.md) record binary size, CPU time,
 and memory for the core, scalar training, and XOR workloads.
@@ -140,10 +141,11 @@ its shape list in order.
 
 This is a different PRNG/normal transform from Racket Malt. The same numeric
 seed does not select the same Racket sequence. The self-contained
-[XOR example](../demos/malt-xor.scm) uses stream `(17, 0)`, a 2-to-8-to-1 ReLU
+[XOR example](../tests/xor.scm) uses stream `(17, 0)`, a 2-to-8-to-1 ReLU
 network, 4000 naked-gradient updates, `alpha = 0.01`, and batch size four.
-Run it with `build/emit run demos/malt-xor.scm`, or build with
-`build/emit build demos/malt-xor.scm -o /tmp/malt-xor` and run that executable.
+From the collection root, run it with `emit run -L lib packages/malt/tests/xor.scm`, or
+build with `emit build -L lib packages/malt/tests/xor.scm -o /tmp/malt-xor` and run that
+executable.
 It checks all predictions within `0.1` of the targets and total squared error
 below `0.04`.
 
@@ -176,18 +178,20 @@ invalid real domains follow the existing NaN/infinity policy. Exact rational
 and complex results are unavailable. Fixed finite reference values use
 absolute tolerance `1e-9` plus relative tolerance `1e-10`; the scalar quadratic
 has absolute tolerance `1e-9`. Integer sample indices, shapes, and random state
-are compared exactly. XOR uses its explicit prediction/loss thresholds and
-cross-path tolerance `1e-9`.
+are compared exactly. XOR uses its explicit prediction/loss thresholds and prints
+its predictions and loss rounded to six digits before its completion datum.
 
-Run native checks with `bash test/malt-training-tests.sh` and
-`bash test/malt-xor-tests.sh`. They assert exact completion counts and require
-no Racket, Malt checkout, Chez, or network. Add `--source` for the explicitly
-Chez-dependent source-driven checks. Reference data and their independent
-generation are under `test/malt-reference/`; ordinary checks consume committed
-fixtures. To verify/recompute them against the pinned upstream checkout:
+From the collection root, `tools/run-checks.py EMIT` runs the checks declared in
+`packages/malt/checks.scm` through `emit run`, `emit repl`, and a standalone
+executable, and `tools/test-packages.sh EMIT` runs the package-level tests. They
+assert exact completion counts and require no Racket, Malt checkout, Chez, or
+network. Emit's own validation runs the same checks against a pinned commit of
+this collection, adding a published-artifact path and its Chez source driver.
+Reference data and their independent generation are under `tests/reference/`;
+ordinary checks consume committed fixtures. To verify/recompute them against the pinned upstream checkout:
 
 ```sh
-python3 test/malt-reference/check.py --upstream /path/to/malt
+python3 packages/malt/tests/reference/check.py --upstream /path/to/malt
 ```
 
 This explicit check requires Racket and the exact pinned Malt revision. It

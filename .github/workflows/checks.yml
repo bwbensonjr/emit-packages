@@ -1,0 +1,33 @@
+name: Package checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Weekly, so a new Emit release that breaks a package is noticed.
+    - cron: "17 6 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Checks against the latest Emit release
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Install Emit
+        run: |
+          brew install bwbensonjr/emit/emit
+          emit --version
+      - name: Execution-path checks
+        run: python3 tools/run-checks.py "$(command -v emit)"
+      - name: Package-level tests
+        run: bash tools/test-packages.sh "$(command -v emit)"

@@ -4,7 +4,7 @@ import re
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[3]
 EXPECTED = {
     "tensors": """dual dual? dual* primal backprop scalar? end-of-chain len ref refr
         tref tlen tmap list->tensor tensor->vector tensor tensor-object? build-tensor tensor? rank shape reshape

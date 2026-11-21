@@ -1,5 +1,8 @@
 # Malt learner port to Emit
 
+> Historical: the exploration that preceded the port, written while Malt was being
+> added to the Emit repository. Paths and commands refer to that repository.
+
 Status: exploration and handoff for a change proposal.
 Captured: 2026-11-15. Emit checkout: `6ee5c79`; Malt checkout: `92a3e63`.
 

@@ -5,7 +5,7 @@ reverse-mode algorithms are ported from the nested-vector `learner` backend of
 Malt revision `92a3e63aebf8f0801cffdb6b8a44c199d7973148`, accompanying *The Little
 Learner*. Other Malt tensor backends have different representations and are not
 selected by this import. Copyright 2021 Anurag Mendhekar and Daniel P. Friedman;
-see `lib/malt/LICENSE` for the retained MIT notice.
+see `packages/malt/LICENSE` for the retained MIT notice.
 
 Use a prefix to keep ordinary Scheme arithmetic and differentiable arithmetic
 visible together:
@@ -183,12 +183,12 @@ checks both primal output and the argument-gradient list. Checks succeed with
 
 ## Verification
 
-`bash test/malt-core-tests.sh` checks native run, standalone build, persistent
-REPL, and explicit whole-library artifacts. It requires the native build tools
-and no Chez or Racket. `bash test/malt-core-tests.sh --reference` instead invokes
-the source-driven Chez compiler and requires Chez. Each path must finish all
-120 checks and print `(malt-core-complete 120)`; process success alone is
-insufficient. `test/malt-core-exports.py` independently checks the four internal
+The `malt-core` entry in `packages/malt/checks.scm` runs `tests/core.scm` through
+native run, standalone build, and persistent REPL (`tools/run-checks.py`). Emit's
+pinned validation adds explicit whole-library artifacts and its source-driven Chez
+compiler. Each path must finish all 120 checks and print `(malt-core-complete 120)`;
+process success alone is insufficient. `tests/malt-core-exports.py` independently
+checks the four internal
 library interfaces used by the facade (112 bindings, counting re-exports).
 
 Fixtures cover tensor validation, shallow conversion, scalar shapes, reshape
