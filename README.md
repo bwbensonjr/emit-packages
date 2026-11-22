@@ -11,12 +11,20 @@ domain libraries live here, released on their own schedule and tested against Em
 ## Install
 
 The collection's `lib/` directory is a single Emit library root containing every
-package's libraries. Installing is cloning it and telling Emit where it is:
+package's libraries. With Emit 0.12.0 or later, install it by cloning the collection
+and linking its `lib/` at Emit's user library root:
 
 ```sh
 git clone https://github.com/bwbensonjr/emit-packages ~/src/emit-packages
-export EMIT_LIBRARY_PATH="$HOME/src/emit-packages/lib"
+mkdir -p ~/.local/share/emit
+ln -s ~/src/emit-packages/lib ~/.local/share/emit/lib
 ```
+
+The user library root is `$XDG_DATA_HOME/emit/lib` when `XDG_DATA_HOME` is set to an
+absolute path, and `~/.local/share/emit/lib` otherwise, on macOS and Linux alike. Every
+`emit` process finds it with no environment setup, including editors and other tools not
+started from your shell. `emit doctor` lists it as a `user` provider. Updating the
+collection is `git -C ~/src/emit-packages pull`.
 
 Then, from any directory:
 
@@ -26,11 +34,20 @@ $ emit run sq.scm
 6.0
 ```
 
-`emit run`, `emit repl`, and `emit build` all honour `EMIT_LIBRARY_PATH`. Emit's
-`resolve libraries ->` narration lists the roots it searched. A project's own
-manifest or `-L` roots still take precedence. Emit 0.10.x also ships an older
-copy of Malt in its installed library root; `EMIT_LIBRARY_PATH` is searched
-before that root, so the collection's copy wins.
+A project's own `lib/`, its manifest, `-L` roots, and `EMIT_LIBRARY_PATH` all take
+precedence over the user root, so a project can vendor or patch its own copy. Emit's
+verbose resolution narration (`EMIT_VERBOSITY=verbose`) names the root each library
+came from.
+
+**Emit 0.11.x and earlier** have no user library root. Point `EMIT_LIBRARY_PATH` at
+the collection instead, which also works on later versions as an override:
+
+```sh
+export EMIT_LIBRARY_PATH="$HOME/src/emit-packages/lib"
+```
+
+Emit 0.10.x also ships an older copy of Malt in its installed library root;
+`EMIT_LIBRARY_PATH` is searched before that root, so the collection's copy wins.
 
 ## Layout
 
