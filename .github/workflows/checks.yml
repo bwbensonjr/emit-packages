@@ -17,8 +17,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  checks:
-    name: Checks against the latest Emit release
+  macos:
+    name: macOS (Homebrew Emit)
     runs-on: macos-latest
     timeout-minutes: 45
     steps:
@@ -31,3 +31,34 @@ jobs:
         run: python3 tools/run-checks.py "$(command -v emit)"
       - name: Package-level tests
         run: bash tools/test-packages.sh "$(command -v emit)"
+
+  linux:
+    name: Linux (Nix Emit)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
+      - name: Install Emit
+        run: |
+          nix build -L github:bwbensonjr/emit -o "$RUNNER_TEMP/emit"
+          "$RUNNER_TEMP/emit/bin/emit" --version
+      - name: Execution-path checks
+        run: python3 tools/run-checks.py "$RUNNER_TEMP/emit/bin/emit"
+      - name: Package-level tests
+        run: bash tools/test-packages.sh "$RUNNER_TEMP/emit/bin/emit"
+
+  # The one status the main ruleset requires. It passes only when every platform
+  # passed, so adding a platform never changes the ruleset.
+  required:
+    name: Package checks
+    if: always()
+    needs: [macos, linux]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Every platform passed
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "platform results: $RESULTS"
+          for r in $RESULTS; do [ "$r" = success ] || exit 1; done
