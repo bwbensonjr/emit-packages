@@ -10,21 +10,11 @@ domain libraries live here, released on their own schedule and tested against Em
 
 ## Install
 
-The collection's `lib/` directory is a single Emit library root containing every
-package's libraries. With Emit 0.12.0 or later, install it by cloning the collection
-and linking its `lib/` at Emit's user library root:
+With Emit 0.13.0 or later, `emit pkg` installs packages into Emit's user library root:
 
 ```sh
-git clone https://github.com/bwbensonjr/emit-packages ~/src/emit-packages
-mkdir -p ~/.local/share/emit
-ln -s ~/src/emit-packages/lib ~/.local/share/emit/lib
+emit pkg install malt
 ```
-
-The user library root is `$XDG_DATA_HOME/emit/lib` when `XDG_DATA_HOME` is set to an
-absolute path, and `~/.local/share/emit/lib` otherwise, on macOS and Linux alike. Every
-`emit` process finds it with no environment setup, including editors and other tools not
-started from your shell. `emit doctor` lists it as a `user` provider. Updating the
-collection is `git -C ~/src/emit-packages pull`.
 
 Then, from any directory:
 
@@ -34,13 +24,45 @@ $ emit run sq.scm
 6.0
 ```
 
-A project's own `lib/`, its manifest, `-L` roots, and `EMIT_LIBRARY_PATH` all take
-precedence over the user root, so a project can vendor or patch its own copy. Emit's
-verbose resolution narration (`EMIT_VERBOSITY=verbose`) names the root each library
-came from.
+`emit pkg available` lists what the collection offers, `emit pkg list` shows what is
+installed and at which commit, `emit pkg update` moves every installed package to the
+collection's current `main`, and `emit pkg remove malt` deletes exactly Malt's files.
+This repository's `main` branch is the release: every change to it reaches users on
+their next `install` or `update`, which is why `main` requires the `Package checks`
+status. See Emit's [PACKAGES.md](https://github.com/bwbensonjr/emit/blob/main/docs/PACKAGES.md)
+for where files go, the safety rules, and recovery.
+
+The user library root is `$XDG_DATA_HOME/emit/lib` when `XDG_DATA_HOME` is set to an
+absolute path, and `~/.local/share/emit/lib` otherwise, on macOS and Linux alike. Every
+`emit` process finds it with no environment setup, and `emit doctor` lists it as a
+`user` provider. A project's own `lib/`, its manifest, `-L` roots, and
+`EMIT_LIBRARY_PATH` all take precedence over it, so a project can vendor or patch its
+own copy. Emit's verbose resolution narration (`EMIT_VERBOSITY=verbose`) names the root
+each library came from.
+
+### From a checkout
+
+To install from a branch, an older commit, or local edits, point `emit pkg` at a
+checkout:
+
+```sh
+git clone https://github.com/bwbensonjr/emit-packages ~/src/emit-packages
+emit pkg install --from ~/src/emit-packages malt
+```
+
+**Emit 0.12.x** has no `emit pkg`. Link the checkout's `lib/` at the user library root
+instead, and update with `git -C ~/src/emit-packages pull`:
+
+```sh
+mkdir -p ~/.local/share/emit
+ln -s ~/src/emit-packages/lib ~/.local/share/emit/lib
+```
+
+`emit pkg` refuses to write through that link, so to switch to it later, remove the
+link and run `emit pkg install`.
 
 **Emit 0.11.x and earlier** have no user library root. Point `EMIT_LIBRARY_PATH` at
-the collection instead, which also works on later versions as an override:
+the checkout instead, which also works on later versions as an override:
 
 ```sh
 export EMIT_LIBRARY_PATH="$HOME/src/emit-packages/lib"
@@ -107,8 +129,8 @@ tools/run-checks.py "$(command -v emit)"       # execution-path checks
 tools/test-packages.sh "$(command -v emit)"    # package-level tests
 ```
 
-CI runs both against the latest Emit release. Neither needs Racket or an
-upstream checkout.
+CI runs both against the latest Emit release on macOS (Homebrew) and Linux (Nix).
+Neither needs Racket or an upstream checkout.
 
 ## License
 
