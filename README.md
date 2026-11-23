@@ -87,6 +87,7 @@ packages/
 tools/
   run-checks.py           runs every package's checks against a given emit
   test-packages.sh        runs every package's tests/package-tests.sh
+  install-check.py        installs every package with emit pkg and imports its libraries
 ```
 
 A package's libraries go under `lib/`, never under `packages/<name>/`, so the whole
@@ -127,10 +128,16 @@ any change to the contract has to land in Emit's driver as well.
 ```sh
 tools/run-checks.py "$(command -v emit)"       # execution-path checks
 tools/test-packages.sh "$(command -v emit)"    # package-level tests
+tools/install-check.py "$(command -v emit)"    # install with emit pkg (Emit 0.13.0+)
 ```
 
-CI runs both against the latest Emit release on macOS (Homebrew) and Linux (Nix).
-Neither needs Racket or an upstream checkout.
+`install-check.py` installs every package with `emit pkg install --from` into a
+temporary user library root, checks `available` and `list`, imports each library
+`package.scm` declares from an unrelated directory, and removes them again. It never
+touches your own user root.
+
+CI runs all three against the latest Emit release on macOS (Homebrew) and Linux
+(Nix). None needs Racket or an upstream checkout.
 
 ## License
 

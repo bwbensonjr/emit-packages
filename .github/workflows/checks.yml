@@ -31,6 +31,8 @@ jobs:
         run: python3 tools/run-checks.py "$(command -v emit)"
       - name: Package-level tests
         run: bash tools/test-packages.sh "$(command -v emit)"
+      - name: Install with emit pkg
+        run: python3 tools/install-check.py "$(command -v emit)"
 
   linux:
     name: Linux (Nix Emit)
@@ -47,6 +49,8 @@ jobs:
         run: python3 tools/run-checks.py "$RUNNER_TEMP/emit/bin/emit"
       - name: Package-level tests
         run: bash tools/test-packages.sh "$RUNNER_TEMP/emit/bin/emit"
+      - name: Install with emit pkg
+        run: python3 tools/install-check.py "$RUNNER_TEMP/emit/bin/emit"
 
   # The one status the main ruleset requires. It passes only when every platform
   # passed, so adding a platform never changes the ruleset.
