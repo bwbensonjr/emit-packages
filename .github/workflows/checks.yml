@@ -6,7 +6,7 @@ on:
   pull_request:
   workflow_dispatch:
   schedule:
-    # Weekly, so a new Emit release that breaks a package is noticed.
+    # Detect Emit releases even when the collection has no new commits.
     - cron: "17 6 * * 1"
 
 permissions:
@@ -17,52 +17,151 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  macos:
-    name: macOS (Homebrew Emit)
-    runs-on: macos-latest
-    timeout-minutes: 45
+  release:
+    name: Resolve stable Emit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      tag: ${{ steps.target.outputs.tag }}
+      version: ${{ steps.target.outputs.version }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - name: Install Emit
+        with:
+          persist-credentials: false
+      - name: Test compatibility tooling
+        run: python3 -m unittest discover -s tools/tests -v
+      - name: Resolve one stable target
+        id: target
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          brew install bwbensonjr/emit/emit
-          emit --version
-      - name: Execution-path checks
-        run: python3 tools/run-checks.py "$(command -v emit)"
-      - name: Package-level tests
-        run: bash tools/test-packages.sh "$(command -v emit)"
-      - name: Install with emit pkg
-        run: python3 tools/install-check.py "$(command -v emit)"
+          mkdir -p "$RUNNER_TEMP/evidence"
+          python3 tools/emit-release.py resolve --output "$RUNNER_TEMP/evidence/target.json"
+          python3 - "$RUNNER_TEMP/evidence/target.json" >> "$GITHUB_OUTPUT" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          target = json.loads(Path(sys.argv[1]).read_text())
+          print("tag=" + target["tag"])
+          print("version=" + target["version"])
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: emit-target
+          path: ${{ runner.temp }}/evidence/
+          if-no-files-found: warn
 
-  linux:
-    name: Linux (Nix Emit)
-    runs-on: ubuntu-24.04
+  macos:
+    name: macOS (Homebrew Emit)
+    needs: release
+    runs-on: macos-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: emit-target
+          path: ${{ runner.temp }}/evidence
+      - name: Install and verify released Emit
+        run: |
+          brew install bwbensonjr/emit/emit
+          python3 tools/emit-release.py verify --target "$RUNNER_TEMP/evidence/target.json" --emit "$(command -v emit)"
+      - name: Lifecycle fixture regressions
+        run: EMIT_TEST_BINARY="$(command -v emit)" python3 -m unittest tools.tests.test_install_check -v
+      - name: Execution-path checks
+        run: python3 tools/run-checks.py "$(command -v emit)" --report "$RUNNER_TEMP/evidence/native.json"
+      - name: Package-level tests
+        run: bash tools/test-packages.sh "$(command -v emit)"
+      - name: Install, update and remove with emit pkg
+        run: python3 tools/install-check.py "$(command -v emit)" --report "$RUNNER_TEMP/evidence/lifecycle.json"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: compatibility-macos
+          path: ${{ runner.temp }}/evidence/
+          if-no-files-found: warn
+
+  linux:
+    name: Linux (Nix Emit)
+    needs: release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: emit-target
+          path: ${{ runner.temp }}/evidence
       - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
-      - name: Install Emit
+      - name: Install and verify released Emit
         run: |
           nix build -L github:bwbensonjr/emit -o "$RUNNER_TEMP/emit"
-          "$RUNNER_TEMP/emit/bin/emit" --version
+          python3 tools/emit-release.py verify --target "$RUNNER_TEMP/evidence/target.json" --emit "$RUNNER_TEMP/emit/bin/emit"
+      - name: Lifecycle fixture regressions
+        run: EMIT_TEST_BINARY="$RUNNER_TEMP/emit/bin/emit" python3 -m unittest tools.tests.test_install_check -v
       - name: Execution-path checks
-        run: python3 tools/run-checks.py "$RUNNER_TEMP/emit/bin/emit"
+        run: python3 tools/run-checks.py "$RUNNER_TEMP/emit/bin/emit" --report "$RUNNER_TEMP/evidence/native.json"
       - name: Package-level tests
         run: bash tools/test-packages.sh "$RUNNER_TEMP/emit/bin/emit"
-      - name: Install with emit pkg
-        run: python3 tools/install-check.py "$RUNNER_TEMP/emit/bin/emit"
+      - name: Install, update and remove with emit pkg
+        run: python3 tools/install-check.py "$RUNNER_TEMP/emit/bin/emit" --report "$RUNNER_TEMP/evidence/lifecycle.json"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: compatibility-linux
+          path: ${{ runner.temp }}/evidence/
+          if-no-files-found: warn
 
-  # The one status the main ruleset requires. It passes only when every platform
-  # passed, so adding a platform never changes the ruleset.
+  reference:
+    name: Chez source reference
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      EMIT_TAG: ${{ needs.release.outputs.tag }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: emit-target
+          path: ${{ runner.temp }}/evidence
+      - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
+      - name: Obtain verified release sources
+        run: |
+          python3 tools/emit-release.py fetch-source --target "$RUNNER_TEMP/evidence/target.json" --output-dir "$RUNNER_TEMP/source" > "$RUNNER_TEMP/source-path"
+          python3 tools/emit-release.py verify --target "$RUNNER_TEMP/evidence/target.json" --source "$(cat "$RUNNER_TEMP/source-path")"
+      - name: Run independent source-driver checks
+        run: |
+          nix develop "github:bwbensonjr/emit/${EMIT_TAG}#verify" --command \
+            python3 tools/run-checks.py --source "$(cat "$RUNNER_TEMP/source-path")" --report "$RUNNER_TEMP/evidence/source.json"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: compatibility-reference
+          path: ${{ runner.temp }}/evidence/
+          if-no-files-found: warn
+
+  # The single required status owns the native gate. Reference results are
+  # separate; their intentional absence on PR/push is not a native failure.
   required:
     name: Package checks
     if: always()
-    needs: [macos, linux]
+    needs: [release, macos, linux]
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
-      - name: Every platform passed
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Target and every native platform passed
         env:
           RESULTS: ${{ join(needs.*.result, ' ') }}
-        run: |
-          echo "platform results: $RESULTS"
-          for r in $RESULTS; do [ "$r" = success ] || exit 1; done
+        run: python3 tools/emit-release.py aggregate $RESULTS

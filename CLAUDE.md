@@ -20,24 +20,26 @@ The essentials:
 - `tools/` holds the three drivers below and `log.sh`.
 
 Emit itself is usually checked out beside this repository at `../emit`. Its
-`docs/PACKAGES.md` (user side of `emit pkg`), `docs/DEVELOPMENT.md` ("The pinned
-emit-packages collection"), and `docs/OUTPUT.md` are the authoritative references for
-the topics summarized below.
+`docs/PACKAGES.md` (user side of `emit pkg`) and `docs/OUTPUT.md` remain references
+for command behavior and tool narration. This repository owns package compatibility
+and its validation policy in `docs/COMPATIBILITY.md`.
 
 ## Testing
 
-Every driver takes the `emit` binary to test as its only argument:
+Native drivers take the `emit` binary explicitly. Source verification takes a source tree:
 
 ```sh
-tools/run-checks.py "$(command -v emit)"       # execution-path checks: run, repl, build
+tools/run-checks.py "$(command -v emit)"       # five native execution paths
 tools/test-packages.sh "$(command -v emit)"    # package-level tests (exports, provenance, conflicts)
-tools/install-check.py "$(command -v emit)"    # emit pkg install/list/remove (Emit 0.13.0+)
+tools/install-check.py "$(command -v emit)"    # install/update/remove (Emit 0.13.0+)
+tools/run-checks.py --source ../emit            # explicit Chez source-driver checks
 ```
 
 - Pick the binary deliberately. `command -v emit` is usually Homebrew's release; to
-  test against unreleased Emit work, pass `../emit/build/emit`. CI uses the latest
-  release (Homebrew on macOS, `nix build github:bwbensonjr/emit` on Linux).
-- `run-checks.py` is the slow one: every check runs three times, and `emit build`
+  test against unreleased Emit work, pass `../emit/build/emit`. CI resolves the latest
+  stable release once, then verifies both Homebrew on macOS and Nix's promoted default
+  package on Linux report that version. Channel lag fails; it is not a fallback.
+- `run-checks.py` is the slow one: every check runs on five native paths, and `emit build`
   links a native executable per check. For a quick loop on one program, run it
   directly with the same roots the driver uses:
   `emit run -L lib -L packages/<name>/tests packages/<name>/tests/<file>.scm`.
@@ -47,7 +49,7 @@ tools/install-check.py "$(command -v emit)"    # emit pkg install/list/remove (E
   and never run by CI.
 - A new behavior gets an execution-path check in `checks.scm`: a self-checking
   program whose final stdout line is the expected datum. Keep the `checks.scm`
-  format exactly as small as the README describes (see "Coordinating with Emit").
+  format as small as the README describes; this repository owns its readers.
 - When a package's facade export list changes, update its pinned inventories too.
   For Malt that is `tests/malt-core-exports.py` (internal libraries) and
   `tests/reference/export-map.json` (every facade export with its upstream source or
@@ -60,7 +62,8 @@ tools/install-check.py "$(command -v emit)"    # emit pkg install/list/remove (E
   Packages are not tagged; the `v*` tags in this repository are Emit release tags
   carried over with Malt's history.
 - `main` requires the single `Package checks` status from
-  `.github/workflows/checks.yml`, which passes only when every platform job passed.
+  `.github/workflows/checks.yml`, which passes only when target resolution and every
+  required native platform job passed.
   Add a platform as a new job under `needs:`; never change the required status name.
   The workflow also runs weekly so a new Emit release that breaks a package shows up.
 - **Bump a package's `version` in `package.scm`** under SemVer in the same pull request
@@ -71,21 +74,23 @@ tools/install-check.py "$(command -v emit)"    # emit pkg install/list/remove (E
 - `package.scm`'s `(emit (minimum ...))` must stay true: a package may not use a
   feature newer than the Emit version it declares without raising it.
 
-## Coordinating with Emit
+## Compatibility ownership
 
-- Emit validates **one pinned commit** of this repository:
-  `EMIT_PACKAGES_PIN_COMMIT` in Emit's `tools/emit-packages-pin.sh`, run by
-  `tools/emit-packages.py` in its `emit-packages-pinned` (native) and
-  `emit-packages-pinned-source` (Chez source driver) suites. A commit here changes
-  nothing in Emit until that pin moves; moving it is a separate, reviewed Emit change
-  verified with `bash tools/test.sh --suite emit-packages-pinned`.
-- To test an unpushed change here against an Emit checkout, from `../emit`:
-  `EMIT_PACKAGES_DIR=../emit-packages python3 tools/emit-packages.py`. The run is
-  labelled `UNPINNED` and is not evidence for a pin.
-- Emit's driver reads `checks.scm` too and adds an execution path that consumes
-  published library artifacts. Any change to the `checks.scm` contract must land in
-  Emit's driver as well, so treat it as a cross-repository change.
-- A bug in Emit found while working here is filed against `bwbensonjr/emit`, with a
+- Keep published `main` compatible with the latest stable released Emit. Package
+  functionality requiring a newer compiler waits for that compiler's release and
+  declares an appropriate minimum. Latest-stable CI does not prove every older
+  version works.
+- Package publishing and changes to `checks.scm` require no paired Emit pull
+  request, Emit-maintained collection pin, or compiler release. Keep its readers
+  and native/reference coverage coherent here.
+- To test an unpushed package change, run this repository's drivers with an explicit
+  Emit binary or `--source EMIT_SOURCE`. Reports record actual identities; a
+  development build does not prove stable-release compatibility.
+- Native CI covers run, REPL, standalone, published artifact reuse and installed
+  sources. Weekly/manual reference CI uses the matching released source tree and
+  Chez. Explicit reference requests fail on missing prerequisites.
+- See `docs/COMPATIBILITY.md` for the coverage transfer from Emit and evidence
+  commands. An Emit defect found here is filed against `bwbensonjr/emit`, with a
   reproduction that does not need this repository where possible.
 
 ## Conventions
