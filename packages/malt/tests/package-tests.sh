@@ -43,4 +43,18 @@ if "$EMIT" run "${ROOTS[@]}" "$TMP/conflict.scm" > "$TMP/conflict.out" 2> "$TMP/
 fi
 grep -qi 'conflict' "$TMP/conflict.err" || { cat "$TMP/conflict.err" >&2; exit 1; }
 say "reject conflict.scm -> explicit base and learner import conflict"
-say "verify Malt package tests -> exports, provenance, 2 rejected imports, 1 conflict"
+
+# Excluding only the arithmetic names is no longer enough: the facade also
+# exports the dual-aware comparators and sign predicates.
+cat > "$TMP/arithmetic-only.scm" <<'SCM'
+(import (except (scheme base) + - * / abs max expt))
+(import (malt learner))
+(gradient (lambda (x) (* x x)) 3.0)
+SCM
+if "$EMIT" run "${ROOTS[@]}" "$TMP/arithmetic-only.scm" > "$TMP/arithmetic.out" 2> "$TMP/arithmetic.err"; then
+  say "fail arithmetic-only.scm -> base comparators and learner comparators accepted"
+  exit 1
+fi
+grep -qi 'conflict' "$TMP/arithmetic.err" || { cat "$TMP/arithmetic.err" >&2; exit 1; }
+say "reject arithmetic-only.scm -> base comparator and learner import conflict"
+say "verify Malt package tests -> exports, provenance, 2 rejected imports, 2 conflicts"

@@ -1,5 +1,5 @@
 ;; Mathematical spellings remain ordinary library bindings on every execution path.
-(import (except (scheme base) + - * / abs max expt)
+(import (except (scheme base) + - * / abs max expt = < <= > >= zero? positive? negative?)
         (scheme write)
         (malt learner)
         (prefix (malt learner) m:)

@@ -139,6 +139,13 @@
     "upstream_identifier": "/-\u03c1",
     "upstream_line": 23
   },
+  "<": {
+    "adaptation": "Rename of <-0-0, as upstream main.rkt provides it; R7RS library adaptation",
+    "group": "Comparisons",
+    "upstream": "main.rkt",
+    "upstream_identifier": "<-0-0",
+    "upstream_line": 48
+  },
   "<-0-0": {
     "adaptation": "ASCII spelling and R7RS library adaptation",
     "group": "Comparisons",
@@ -152,6 +159,13 @@
     "upstream": "learner/ext-ops/B-comparators.rkt",
     "upstream_identifier": "<-1",
     "upstream_line": 48
+  },
+  "<=": {
+    "adaptation": "Rename of <=-0-0, as upstream main.rkt provides it; R7RS library adaptation",
+    "group": "Comparisons",
+    "upstream": "main.rkt",
+    "upstream_identifier": "<=-0-0",
+    "upstream_line": 49
   },
   "<=-0-0": {
     "adaptation": "ASCII spelling and R7RS library adaptation",
@@ -167,6 +181,13 @@
     "upstream_identifier": "<=-1",
     "upstream_line": 54
   },
+  "=": {
+    "adaptation": "Rename of =-0-0, as upstream main.rkt provides it; R7RS library adaptation",
+    "group": "Comparisons",
+    "upstream": "main.rkt",
+    "upstream_identifier": "=-0-0",
+    "upstream_line": 47
+  },
   "=-0-0": {
     "adaptation": "ASCII spelling and R7RS library adaptation",
     "group": "Comparisons",
@@ -181,6 +202,13 @@
     "upstream_identifier": "=-1",
     "upstream_line": 45
   },
+  ">": {
+    "adaptation": "Rename of >-0-0, as upstream main.rkt provides it; R7RS library adaptation",
+    "group": "Comparisons",
+    "upstream": "main.rkt",
+    "upstream_identifier": ">-0-0",
+    "upstream_line": 50
+  },
   ">-0-0": {
     "adaptation": "ASCII spelling and R7RS library adaptation",
     "group": "Comparisons",
@@ -193,6 +221,13 @@
     "group": "Comparisons",
     "upstream": "learner/ext-ops/B-comparators.rkt",
     "upstream_identifier": ">-1",
+    "upstream_line": 51
+  },
+  ">=": {
+    "adaptation": "Rename of >=-0-0, as upstream main.rkt provides it; R7RS library adaptation",
+    "group": "Comparisons",
+    "upstream": "main.rkt",
+    "upstream_identifier": ">=-0-0",
     "upstream_line": 51
   },
   ">=-0-0": {
@@ -823,12 +858,26 @@
     "upstream_identifier": "naked-gradient-descent",
     "upstream_line": 20
   },
+  "negative?": {
+    "adaptation": "Emit addition: base predicate applied to the primal of a scalar dual",
+    "group": "Comparisons",
+    "upstream": null,
+    "upstream_identifier": null,
+    "upstream_line": null
+  },
   "plane": {
     "adaptation": "ASCII spelling and R7RS library adaptation",
     "group": "Layers and models",
     "upstream": "malted/B-layer-fns.rkt",
     "upstream_identifier": "plane",
     "upstream_line": 31
+  },
+  "positive?": {
+    "adaptation": "Emit addition: base predicate applied to the primal of a scalar dual",
+    "group": "Comparisons",
+    "upstream": null,
+    "upstream_identifier": null,
+    "upstream_line": null
   },
   "prim1": {
     "adaptation": "ASCII spelling and R7RS library adaptation",
@@ -1228,6 +1277,13 @@
     "upstream": "malted/O-init.rkt",
     "upstream_identifier": "zero-tensor",
     "upstream_line": 28
+  },
+  "zero?": {
+    "adaptation": "Emit addition: base predicate applied to the primal of a scalar dual",
+    "group": "Comparisons",
+    "upstream": null,
+    "upstream_identifier": null,
+    "upstream_line": null
   },
   "zeroes": {
     "adaptation": "ASCII spelling and R7RS library adaptation",

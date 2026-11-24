@@ -76,4 +76,9 @@
     (rename m:*-2-1-primal *-2-1-ρ) (rename m:argmax-primal argmax-ρ)
     (rename m:max-primal max-ρ) (rename m:sum-cols-primal sum-cols-ρ)
     (rename m:correlate-primal correlate-ρ) (rename m:rectify-primal rectify-ρ)
-    (rename m:flatten-primal flatten-ρ) (rename m:concat-primal concat-ρ)))
+    (rename m:flatten-primal flatten-ρ) (rename m:concat-primal concat-ρ)
+    ;; Dual-aware base names: comparators follow upstream main.rkt; the sign
+    ;; predicates are Emit additions.
+    (rename m:=-0-0 =) (rename m:<-0-0 <) (rename m:<=-0-0 <=) (rename m:>-0-0 >)
+    (rename m:>=-0-0 >=) (rename m:zero?-0 zero?) (rename m:positive?-0 positive?)
+    (rename m:negative?-0 negative?)))

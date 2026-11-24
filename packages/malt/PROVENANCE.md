@@ -19,6 +19,10 @@ suffix; `ext1-ρ` and `ext2-ρ` alias the existing primal extension procedures,
 and `zeroes-ρ` aliases `zeroes-primal`. `λ` re-exports Scheme `lambda`
 syntax from `(scheme base)`, matching the spelling supplied by Racket's base
 language. These are aliases, preserving binding identity.
+The facade exports `= < <= > >=` as the base-rank comparators `=-0-0` through
+`>=-0-0`, following upstream `main.rkt` rather than the narrower `learner.rkt`
+surface. Its `zero?`, `positive?`, and `negative?`, which test a dual's primal,
+are Emit additions.
 Other adaptations include immutable gradient tables replaced with
 calculation-local mutable identity tables, and hyperparameter value/setter
 macros replaced with Scheme parameters. Empty shapes represent scalars; public shape-sensitive operations

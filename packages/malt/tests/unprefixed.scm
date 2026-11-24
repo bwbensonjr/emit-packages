@@ -1,4 +1,4 @@
-(import (except (scheme base) + - * / abs max expt)
+(import (except (scheme base) + - * / abs max expt = < <= > >= zero? positive? negative?)
         (scheme write)
         (malt learner))
 (define derivative (gradient (lambda (x) (* x x)) 3.0))
