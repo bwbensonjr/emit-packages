@@ -1,7 +1,7 @@
 ;;; Package metadata for Malt, read by the collection's tools.
 (package
   (name malt)
-  (version "0.1.0")
+  (version "0.2.0")
   (summary "Tensors, reverse-mode automatic differentiation, and training utilities from The Little Learner")
   (license "MIT")
   (emit (minimum "0.10.0"))

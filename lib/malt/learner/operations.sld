@@ -12,7 +12,7 @@
     abs-primal *-2-1-primal argmax-primal max-primal sum-cols-primal correlate-primal
     flatten-primal concat-primal +-0-0 --0-0 *-0-0 /-0-0 expt-0-0 exp-0 log-0 abs-0
     rectify-0 sqrt-0 sum-1 argmax-1 max-1 flatten-2 concat-1-1 =-0-0 <-0-0 <=-0-0 >-0-0
-    >=-0-0 =-1 <-1 >-1 <=-1 >=-1 !=-1)
+    >=-0-0 zero?-0 positive?-0 negative?-0 =-1 <-1 >-1 <=-1 >=-1 !=-1)
   (begin
     (define (add1 x) (+ x 1))
     (define (sub1 x) (- x 1))
@@ -72,6 +72,15 @@
     (define >-0-0 (comparator >))
 
     (define >=-0-0 (comparator >=))
+
+    ;; Emit addition: sign predicates on the primal of a scalar dual.
+    (define sign-predicate (lambda (f) (lambda (da) (f (primal da)))))
+
+    (define zero?-0 (sign-predicate zero?))
+
+    (define positive?-0 (sign-predicate positive?))
+
+    (define negative?-0 (sign-predicate negative?))
 
     (define comparator-primal
       (lambda (f) (lambda (da db) (cond ((f (primal da) (primal db)) 1.0) (else 0.0)))))

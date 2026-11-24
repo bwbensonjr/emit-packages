@@ -135,7 +135,8 @@ takes a primal function and derivative function
 The `-primal` suffix replaces upstream's hyphen-rho suffix. Base-rank names such
 as `+-0-0`, `sum-1`, and `flatten-2` remain available for the book's construction
 of extended operations. Boolean scalar comparators have names such as
-`=-0-0`; tensorized comparators such as `=-1` return `1.0`/`0.0` leaves.
+`=-0-0`, which the facade also exports as `= < <= > >=`; tensorized comparators
+such as `=-1` return `1.0`/`0.0` leaves.
 
 At nonsmooth points the upstream conventions are retained: `rectify` passes its
 input through at zero, so its derivative there is `1.0`; `abs` likewise chooses

@@ -17,7 +17,8 @@ EXPECTED = {
         zeroes-primal sum-primal abs-primal *-2-1-primal argmax-primal max-primal
         sum-cols-primal correlate-primal flatten-primal concat-primal +-0-0 --0-0
         *-0-0 /-0-0 expt-0-0 exp-0 log-0 abs-0 rectify-0 sqrt-0 sum-1 argmax-1
-        max-1 flatten-2 concat-1-1 =-0-0 <-0-0 <=-0-0 >-0-0 >=-0-0 =-1 <-1
+        max-1 flatten-2 concat-1-1 =-0-0 <-0-0 <=-0-0 >-0-0 >=-0-0
+        zero?-0 positive?-0 negative?-0 =-1 <-1
         >-1 <=-1 >=-1 !=-1""",
     "diagnostics": """tolerance trace-print check-dual-equal? check-primal-gradient
         max-tensor-print-length make-printable""",

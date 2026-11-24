@@ -55,14 +55,30 @@ Implicit base imports in programs are an Emit extension. For a portable program 
 base imports, exclude the overlapping names:
 
 ```scheme
-(import (except (scheme base) + - * / abs max expt)
+(import (except (scheme base) + - * / abs max expt
+                 = < <= > >= zero? positive? negative?)
         (malt learner))
 (gradient (lambda (x) (* x x)) 3.0)
 ```
 
 If importing `(scheme inexact)` as well, prefix it or exclude its overlapping
-math names. The facade leaves ordinary `= < > <= >=` unchanged; differentiable
-base-rank and tensor comparator names remain explicit.
+math names.
+
+Learner arithmetic returns scalar duals, which the base comparators reject, so
+the facade also replaces `= < <= > >=` with the base-rank comparators `=-0-0`
+through `>=-0-0` (as upstream's `main.rkt` does) and `zero?`, `positive?`, and
+`negative?` with versions that test a dual's primal. Ordinary recursion over
+learner results therefore works unchanged:
+
+```scheme
+(import (malt learner))
+(define (remainder x y) (if (< x y) x (remainder (- x y) y)))
+(remainder 13 4)
+;; 1
+```
+
+These return booleans and do not contribute to gradients. The tensorized
+comparators keep their explicit names (`=-1`, `<-1`, ...).
 
 ## Training
 
